@@ -6,9 +6,17 @@ public class TraceTest : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+        {
 
+            //MyHitInfo i;
 
-	}
+            //i = AABBRayCast(new Vector3(0, 0, -1.4f), new Vector3(0, 0, 2), new Vector3(0, 0, 0), new Vector3(1, 1, 1));
+            //Debug.Log(i.bHit);
+            //Debug.Log(i.coordinate);
+
+         }
+
+    }
 	
     struct MyHitInfo
     {
@@ -18,7 +26,8 @@ public class TraceTest : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-        
+
+ 
         GameObject target = GameObject.Find("Sphere_target");
         Vector3 start = transform.position;
         Vector3 end = target.transform.position;
@@ -53,26 +62,35 @@ public class TraceTest : MonoBehaviour {
             Vector3[][] tris = { new Vector3[]{ new Vector3(-1, 1), new Vector3(1, 1), new Vector3(1, -1)},
             new Vector3[]{ new Vector3(1, -1), new Vector3(-1, -1), new Vector3(-1, 1)}};
 
+            //the idea is to convert start/end to plane coordinates and see if it collides 
+            //(than transform point of contact back to world space)
+
             BoxCollider[] colliders = staticObj.GetComponentsInChildren<BoxCollider>();
             foreach (BoxCollider box in colliders)
             {
-                foreach(Quaternion rot in rotations)
+                Matrix4x4 trmat = box.transform.worldToLocalMatrix;
+                //Vector3 lstart = trmat.MultiplyVector(start);
+                //Vector3 lend = trmat.MultiplyVector(end);
+
+                Vector3 lstart = box.transform.InverseTransformPoint(start);
+                Vector3 lend = box.transform.InverseTransformPoint(end);
+                lstart = lstart * box.size.x;
+
+                foreach (Quaternion rot in rotations)
                 {
-                    foreach (Vector3[] tri in tris)
-                    {
-                        Vector3 n = rot * Vector3.forward;
+                    Vector3 p0 = Quaternion.Inverse(rot) * lstart;
+                    Vector3 p1 = Quaternion.Inverse(rot) * lend;
 
+                    Debug.Log("==============");
+                    Debug.Log(p0 + "   " + p1);
+                    Debug.Log(lstart + "   " + lend);
+                    Debug.Log(start + "   " + end);
 
-                        Vector3 v0 = rot * tri[0];
-                        Vector3 v1 = rot * tri[1];
-                        Vector3 v2 = rot * tri[2];
-                        //make triangle and collide
+                    MyHitInfo i;
+                    i = AABBRayCast(p0, p1, box.center, box.size);
+                    Debug.Log(i.bHit);
+                    Debug.Log(i.coordinate);
 
-
-                        int a = 0;
-                        //trPlaneSpace.
-
-                    }
                 }
             }
         }
@@ -82,13 +100,103 @@ public class TraceTest : MonoBehaviour {
 
     }
 
-    //http://geomalgorithms.com/a06-_intersect-2.html#Segment-Triangle
-    MyHitInfo TriangleRayCast(Vector3 p0, Vector3 p1, Vector3 v0, Vector3 v1, Vector3 v2)
+    //https://github.com/erich666/GraphicsGems/blob/master/gems/RayBox.c
+    MyHitInfo AABBRayCast(Vector3 p0, Vector3 p1, Vector3 center, Vector3 size)
     {
         //TODO: can we return a tuple or is there a way to define default constructor for struct
         MyHitInfo newInfo = new MyHitInfo();
         newInfo.bHit = false;
 
+        //double minB[NUMDIM], maxB[NUMDIM];		/*box */
+        //double origin[NUMDIM], dir[NUMDIM];     /*ray */
+        //double coord[NUMDIM];				/* hit point */
+
+        float[] minB = { center.x - size.x/2, center.y - size.y / 2, center.z - size.z / 2 };
+        float[] maxB = { center.x + size.x / 2, center.y + size.y / 2, center.z + size.z / 2 };
+        float[] origin = { p0.x, p0.y, p0.z };
+//        float[] dir = { (p1 - p0).normalized.x, (p1 - p0).normalized.y, (p1 - p0).normalized.z };
+        float[] dir = { (p1 - p0).normalized.x, (p1 - p0).normalized.y, (p1 - p0).normalized.z };
+        float[] coord = { 0.0f, 0.0f, 0.0f };
+
+        int NUMDIM = 3;
+        int RIGHT = 0;
+        int LEFT = 1;
+        int MIDDLE = 2;
+
+        {
+            bool inside = true;
+            
+            //was char
+            int [] quadrant = new int[NUMDIM];
+            int i;
+            int whichPlane;
+            float []maxT = { 0, 0, 0 };
+            float []candidatePlane = { 0, 0, 0 };
+
+            /* Find candidate planes; this loop can be avoided if
+            rays cast all from the eye(assume perpsective view) */
+            for (i = 0; i < NUMDIM; i++)
+            { 
+                if (origin[i] < minB[i])
+                {
+                    quadrant[i] = LEFT;
+                    candidatePlane[i] = minB[i];
+                    inside = false;
+                }
+                else if (origin[i] > maxB[i])
+                {
+                    quadrant[i] = RIGHT;
+                    candidatePlane[i] = maxB[i];
+                    inside = false;
+                }
+                else
+                {
+                    quadrant[i] = MIDDLE;
+                }
+            }
+
+            /* Ray origin inside bounding box */
+            if (inside)
+            {
+//                coord = origin;
+                newInfo.coordinate = new Vector3(origin[0], origin[1], origin[2]);
+                newInfo.bHit = true;
+                return (newInfo);
+            }
+
+
+            /* Calculate T distances to candidate planes */
+            for (i = 0; i < NUMDIM; i++)
+                if (quadrant[i] != MIDDLE && dir[i] != 0.0f)
+                    maxT[i] = (candidatePlane[i] - origin[i]) / dir[i];
+                else
+                    maxT[i] = -1.0f;
+
+            /* Get largest of the maxT's for final choice of intersection */
+            whichPlane = 0;
+            for (i = 1; i < NUMDIM; i++)
+                if (maxT[whichPlane] < maxT[i])
+                    whichPlane = i;
+
+            /* Check final candidate actually inside box */
+            if (maxT[whichPlane] < 0.0f) return (newInfo);
+            for (i = 0; i < NUMDIM; i++)
+            {
+                if (whichPlane != i)
+                {
+                    coord[i] = origin[i] + maxT[whichPlane] * dir[i];
+                    if (coord[i] < minB[i] || coord[i] > maxB[i])
+                        return (newInfo);
+                }
+                else
+                {
+                    coord[i] = candidatePlane[i];
+                }
+            }
+            newInfo.coordinate = new Vector3(coord[0], coord[1], coord[2]);
+            newInfo.bHit = true;
+            return (newInfo);
+        }
 
         return newInfo; 
     }
