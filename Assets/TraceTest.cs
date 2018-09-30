@@ -59,22 +59,18 @@ public class TraceTest : MonoBehaviour {
                 Quaternion.AngleAxis(270, Vector3.right)
             };
 
-            Vector3[][] tris = { new Vector3[]{ new Vector3(-1, 1), new Vector3(1, 1), new Vector3(1, -1)},
-            new Vector3[]{ new Vector3(1, -1), new Vector3(-1, -1), new Vector3(-1, 1)}};
 
             //the idea is to convert start/end to plane coordinates and see if it collides 
-            //(than transform point of contact back to world space)
 
             BoxCollider[] colliders = staticObj.GetComponentsInChildren<BoxCollider>();
             foreach (BoxCollider box in colliders)
             {
                 Matrix4x4 trmat = box.transform.worldToLocalMatrix;
-                //Vector3 lstart = trmat.MultiplyVector(start);
-                //Vector3 lend = trmat.MultiplyVector(end);
+                Vector3 lstart = trmat.MultiplyVector(start);
+                Vector3 lend = trmat.MultiplyVector(end);
 
-                Vector3 lstart = box.transform.InverseTransformPoint(start);
-                Vector3 lend = box.transform.InverseTransformPoint(end);
-                lstart = lstart * box.size.x;
+                //Vector3 lstart = box.transform.InverseTransformPoint(start);
+                //Vector3 lend = box.transform.InverseTransformPoint(end);
 
 
                 Debug.Log("==============");
@@ -86,15 +82,16 @@ public class TraceTest : MonoBehaviour {
 
                 if (i.bHit)
                 {
-                    //Vector3 realcoord = i.coordinate;
-                    //realcoord = box.transform.TransformPoint(realcoord);
+                    Vector3 realcoord = i.coordinate;
+                    realcoord = box.transform.TransformPoint(realcoord);
 
                     //uncomment to check if the transform works correctly
                     float frac = (i.coordinate - lstart).magnitude / (lend - lstart).magnitude;
                     Vector3 coord = start + (end - start) * frac;
 
-                    Debug.Log(coord);
-                    Debug.DrawLine(coord, coord + Vector3.up*3, new Color(0xff,0,0));
+                    Debug.Log(realcoord);
+                    Debug.DrawLine(realcoord, realcoord + Vector3.up * 3, new Color(0xff, 0, 0));
+                    Debug.DrawLine(coord, coord + Vector3.up * 3, new Color(0, 0xff, 0));
 
                 }
 
@@ -117,7 +114,7 @@ public class TraceTest : MonoBehaviour {
         //double origin[NUMDIM], dir[NUMDIM];     /*ray */
         //double coord[NUMDIM];				/* hit point */
 
-        float[] minB = { center.x - size.x/2, center.y - size.y / 2, center.z - size.z / 2 };
+        float[] minB = { center.x - size.x / 2, center.y - size.y / 2, center.z - size.z / 2 };
         float[] maxB = { center.x + size.x / 2, center.y + size.y / 2, center.z + size.z / 2 };
         float[] origin = { p0.x, p0.y, p0.z };
 //        float[] dir = { (p1 - p0).normalized.x, (p1 - p0).normalized.y, (p1 - p0).normalized.z };
