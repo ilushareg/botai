@@ -10,6 +10,12 @@ public class TraceTest : MonoBehaviour {
 
 	}
 	
+    struct MyHitInfo
+    {
+        public bool bHit;
+        public Vector3 coordinate;
+    };
+
 	// Update is called once per frame
 	void Update () {
         
@@ -62,6 +68,7 @@ public class TraceTest : MonoBehaviour {
                         Vector3 v2 = rot * tri[2];
                         //make triangle and collide
 
+
                         int a = 0;
                         //trPlaneSpace.
 
@@ -73,5 +80,16 @@ public class TraceTest : MonoBehaviour {
        Debug.DrawLine(start, end);
 
 
+    }
+
+    //http://geomalgorithms.com/a06-_intersect-2.html#Segment-Triangle
+    MyHitInfo TriangleRayCast(Vector3 p0, Vector3 p1, Vector3 v0, Vector3 v1, Vector3 v2)
+    {
+        //TODO: can we return a tuple or is there a way to define default constructor for struct
+        MyHitInfo newInfo = new MyHitInfo();
+        newInfo.bHit = false;
+
+
+        return newInfo; 
     }
 }
