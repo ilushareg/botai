@@ -33,8 +33,16 @@ public class TraceTest : MonoBehaviour {
         GameObject staticObj = GameObject.Find("Static");
         if (true && staticObj != null)
         {
-            Vector3[] sides = { new Vector3(1, 0, 0), new Vector3(0, 1, 0), new Vector3(0, 0, 1),
-            new Vector3(-1, 0, 0), new Vector3(0, -1, 0), new Vector3(0, 0, -1)};
+
+            Quaternion[] rotations =
+            {
+                Quaternion.AngleAxis(0, Vector3.up),
+                Quaternion.AngleAxis(90, Vector3.up),
+                Quaternion.AngleAxis(180, Vector3.up),
+                Quaternion.AngleAxis(270, Vector3.up),
+                Quaternion.AngleAxis(90, Vector3.right),
+                Quaternion.AngleAxis(270, Vector3.right)
+            };
 
             Vector3[][] tris = { new Vector3[]{ new Vector3(-1, 1), new Vector3(1, 1), new Vector3(1, -1)},
             new Vector3[]{ new Vector3(1, -1), new Vector3(-1, -1), new Vector3(-1, 1)}};
@@ -42,22 +50,19 @@ public class TraceTest : MonoBehaviour {
             BoxCollider[] colliders = staticObj.GetComponentsInChildren<BoxCollider>();
             foreach (BoxCollider box in colliders)
             {
-                foreach(Vector3 side in sides)
+                foreach(Quaternion rot in rotations)
                 {
                     foreach (Vector3[] tri in tris)
                     {
-                        Matrix4x4 mat = new Matrix4x4(
-                            new Vector4(1, 0, 0, 0),
-                            new Vector4(0, 1, 0, 0),
-                            new Vector4(0, 0, 1, 0),
-                            new Vector4(0, 0, 0, 0));
+                        Vector3 n = rot * Vector3.forward;
 
-                        Vector3 v0 = mat.MultiplyPoint(tri[0]);
-                        Vector3 v1 = mat.MultiplyPoint(tri[1]);
-                        Vector3 v2 = mat.MultiplyPoint(tri[2]);
+
+                        Vector3 v0 = rot * tri[0];
+                        Vector3 v1 = rot * tri[1];
+                        Vector3 v2 = rot * tri[2];
                         //make triangle and collide
-                        
-                        
+
+                        int a = 0;
                         //trPlaneSpace.
 
                     }
