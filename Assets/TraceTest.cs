@@ -76,34 +76,28 @@ public class TraceTest : MonoBehaviour {
                 Vector3 lend = box.transform.InverseTransformPoint(end);
                 lstart = lstart * box.size.x;
 
-                foreach (Quaternion rot in rotations)
+
+                Debug.Log("==============");
+                Debug.Log(lstart + "   " + lend);
+                Debug.Log(start + "   " + end);
+
+                MyHitInfo i;
+                i = AABBRayCast(lstart, lend, box.center, box.size);
+
+                if (i.bHit)
                 {
-                    Vector3 p0 = Quaternion.Inverse(rot) * lstart;
-                    Vector3 p1 = Quaternion.Inverse(rot) * lend;
+                    //Vector3 realcoord = i.coordinate;
+                    //realcoord = box.transform.TransformPoint(realcoord);
 
-                    Debug.Log("==============");
-                    Debug.Log(p0 + "   " + p1);
-                    Debug.Log(lstart + "   " + lend);
-                    Debug.Log(start + "   " + end);
+                    //uncomment to check if the transform works correctly
+                    float frac = (i.coordinate - lstart).magnitude / (lend - lstart).magnitude;
+                    Vector3 coord = start + (end - start) * frac;
 
-                    MyHitInfo i;
-                    i = AABBRayCast(p0, p1, box.center, box.size);
-
-                    if(i.bHit)
-                    {
-                        Vector3 realcoord = rot * i.coordinate;
-                        realcoord = box.transform.TransformPoint(realcoord);
-
-                        //uncomment to check if the transform works correctly
-                        //float frac = (i.coordinate - p0).magnitude / (p1 - p0).magnitude;
-                        //Vector3 coord = start + (end - start) * frac;
-
-                        Debug.Log(realcoord);
-                        Debug.DrawLine(realcoord, realcoord + Vector3.up*3, new Color(0xff,0,0));
-
-                    }
+                    Debug.Log(coord);
+                    Debug.DrawLine(coord, coord + Vector3.up*3, new Color(0xff,0,0));
 
                 }
+
             }
         }
 
