@@ -40,7 +40,7 @@ public class TraceTest : MonoBehaviour {
 
             foreach (RaycastHit hitInfo in hit)
             {
-                Debug.DrawLine(hitInfo.point, hitInfo.point + Vector3.up * 10);
+                Debug.DrawLine(hitInfo.point, hitInfo.point + Vector3.up * 2);
             }
         }
 
@@ -88,8 +88,20 @@ public class TraceTest : MonoBehaviour {
 
                     MyHitInfo i;
                     i = AABBRayCast(p0, p1, box.center, box.size);
-                    Debug.Log(i.bHit);
-                    Debug.Log(i.coordinate);
+
+                    if(i.bHit)
+                    {
+                        Vector3 realcoord = rot * i.coordinate;
+                        realcoord = box.transform.TransformPoint(realcoord);
+
+                        //uncomment to check if the transform works correctly
+                        //float frac = (i.coordinate - p0).magnitude / (p1 - p0).magnitude;
+                        //Vector3 coord = start + (end - start) * frac;
+
+                        Debug.Log(realcoord);
+                        Debug.DrawLine(realcoord, realcoord + Vector3.up*3, new Color(0xff,0,0));
+
+                    }
 
                 }
             }
