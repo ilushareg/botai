@@ -33,8 +33,12 @@ public class TraceTest : MonoBehaviour {
         Vector3 end = target.transform.position;
         Vector3 dir = end - start;
 
+        int tracesToTest = 1000;
+
+        float tStart = Time.realtimeSinceStartup;
         //test with Unity RayCast
-        if(true)
+        if (true)
+            for (int i = 0; i < tracesToTest; ++i)
         { 
             RaycastHit[] hit = Physics.RaycastAll(start + dir.normalized, dir.normalized, dir.magnitude-1.0f, 0xffff);
 
@@ -43,10 +47,15 @@ public class TraceTest : MonoBehaviour {
                 Debug.DrawLine(hitInfo.point, hitInfo.point + Vector3.up * 2);
             }
         }
+        float tRayCast = Time.realtimeSinceStartup - tStart;
+
+        tStart = Time.realtimeSinceStartup;
 
         //test against planes
         GameObject staticObj = GameObject.Find("Static");
         if (true && staticObj != null)
+            for (int i = 0; i < tracesToTest; ++i)
+
         {
 
             Quaternion[] rotations =
@@ -70,33 +79,25 @@ public class TraceTest : MonoBehaviour {
                 Vector3 lstart = box.transform.InverseTransformPoint(start);
                 Vector3 lend = box.transform.InverseTransformPoint(end);
 
+                MyHitInfo ii;
+                ii = AABBRayCast(lstart, lend, box.center, box.size);
 
-                Debug.Log("==============");
-                Debug.Log(lstart + "   " + lend);
-                Debug.Log(start + "   " + end);
-
-                MyHitInfo i;
-                i = AABBRayCast(lstart, lend, box.center, box.size);
-
-                if (i.bHit)
+                if (ii.bHit)
                 {
-                    Vector3 realcoord = i.coordinate;
+                    Vector3 realcoord = ii.coordinate;
                     realcoord = box.transform.TransformPoint(realcoord);
 
-                    //uncomment to check if the transform works correctly
-                    float frac = (i.coordinate - lstart).magnitude / (lend - lstart).magnitude;
-                    Vector3 coord = start + (end - start) * frac;
-
-                    Debug.Log(realcoord);
                     Debug.DrawLine(realcoord, realcoord + Vector3.up * 3, new Color(0xff, 0, 0));
-                    Debug.DrawLine(coord, coord + Vector3.up * 3, new Color(0, 0xff, 0));
 
                 }
 
             }
         }
+        float tRayCast1 = Time.realtimeSinceStartup - tStart;
 
-       Debug.DrawLine(start, end);
+        Debug.Log(tRayCast + "   " + tRayCast1);
+
+        Debug.DrawLine(start, end);
 
 
     }
