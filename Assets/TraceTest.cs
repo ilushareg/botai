@@ -66,11 +66,9 @@ public class TraceTest : MonoBehaviour {
             foreach (BoxCollider box in colliders)
             {
                 Matrix4x4 trmat = box.transform.worldToLocalMatrix;
-                Vector3 lstart = trmat.MultiplyVector(start);
-                Vector3 lend = trmat.MultiplyVector(end);
 
-                //Vector3 lstart = box.transform.InverseTransformPoint(start);
-                //Vector3 lend = box.transform.InverseTransformPoint(end);
+                Vector3 lstart = box.transform.InverseTransformPoint(start);
+                Vector3 lend = box.transform.InverseTransformPoint(end);
 
 
                 Debug.Log("==============");
